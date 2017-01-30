@@ -277,6 +277,9 @@ public class transformacoes2D extends javax.swing.JFrame {
         else if (btTranslacao.isSelected()) {
             transladarObjeto(evt.getPoint());
         }
+        else if (btMudEscala.isSelected()) {
+            mudarEscalaObjeto(evt.getPoint());
+        }        
         else if (btRotacao.isSelected()) {
             rotacionarObjeto(evt.getPoint());
         }
@@ -482,15 +485,15 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {
                     Double distanciaX = pSegundo.getX() - retas[i].getX1();
                     Double distanciaY = pSegundo.getY() - retas[i].getY1();
-                    
+
                     Point pointIniAux = new Point(
                             (int) (retas[i].getX1()+distanciaX),
                             (int) (retas[i].getY1()+distanciaY));
-                    
+
                     Point pointFinAux = new Point(
                             (int) (retas[i].getX2()+distanciaX), 
                             (int) (retas[i].getY2()+distanciaY));
-                    
+
                     retas[i].setLine(pointIniAux, pointFinAux);
                 }
             }
@@ -499,7 +502,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retangulos[i].contains(pPrimeiro) ) {
                     int distanciaX = (int) (pSegundo.getX() - retangulos[i].getX());
                     int distanciaY = (int) (pSegundo.getY() - retangulos[i].getY());
-                    
+
                     retangulos[i].translate(distanciaX, distanciaY);
                 }
             }
@@ -508,7 +511,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (triangulos[i].contains(pPrimeiro) ) {
                     int distanciaX = (int) (pSegundo.getX() - triangulos[i].xpoints[0]);
                     int distanciaY = (int) (pSegundo.getY() - triangulos[i].ypoints[0]);
-                    
+
                     triangulos[i].translate(distanciaX, distanciaY);
                 }
             }
@@ -531,22 +534,93 @@ public class transformacoes2D extends javax.swing.JFrame {
         }
     }
     
+    private void mudarEscalaObjeto(Point point) {
+        if (verificarPontoContemObjeto(point)) {  
+            for (int i=0; i<countRetas; i++) {
+                if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {
+                    Double escala = Double.parseDouble(
+                        JOptionPane.showInputDialog("Digite o fator de escala :"));
+                    
+                    Double novoX = 
+                            ((retas[i].getX2() - retas[i].getX1()) * escala) +
+                            retas[i].getX1();
+                    Double novoY = 
+                            ((retas[i].getY2() - retas[i].getY1()) * escala) +
+                            retas[i].getY1();
+
+                    retas[i].setLine(retas[i].getX1(), retas[i].getY1(),
+                            novoX, novoY);
+                }
+            }
+
+            for (int i=0; i<countRetangulos; i++) {
+                if (retangulos[i].contains(point) ) {
+                    Double escalaX = Double.parseDouble(
+                            JOptionPane.showInputDialog("Digite o fator de "
+                                    + "escala em X: "));
+
+                    Double escalaY = Double.parseDouble(
+                            JOptionPane.showInputDialog("Digite agora o fator "
+                                    + "de escala em Y: "));
+                    
+                    
+                    Double novoWidth = retangulos[i].getWidth() * escalaX;
+                    Double novoHeight = retangulos[i].getHeight() * escalaY;
+
+                    retangulos[i].setRect(retangulos[i].getX(),
+                            retangulos[i].getY(), novoWidth, novoHeight);
+                }
+            }
+
+            for (int i=0; i<countTriangulos; i++) {
+                if (triangulos[i].contains(point) ) {
+                    Double escala = Double.parseDouble(
+                            JOptionPane.showInputDialog("Digite o fator de "
+                                    + "escala: "));
+                   
+                    int novoXdeA = 
+                            (int) ((triangulos[i].xpoints[1] - 
+                                triangulos[i].xpoints[0]) 
+                                * escala) + triangulos[i].xpoints[0];
+                    int novoYdeA = 
+                            (int) ((triangulos[i].ypoints[1] - 
+                                triangulos[i].ypoints[0]) 
+                                * escala) + triangulos[i].ypoints[0];
+                    
+                    int novoXdeB = 
+                            (int) ((triangulos[i].xpoints[2] - 
+                                triangulos[i].xpoints[0]) 
+                                * escala) + triangulos[i].xpoints[0];
+                    int novoYdeB = 
+                            (int) ((triangulos[i].ypoints[2] - 
+                                triangulos[i].ypoints[0]) 
+                                * escala) + triangulos[i].ypoints[0];
+                    
+                    Polygon triangulo = new Polygon();
+                    triangulo.addPoint(triangulos[i].xpoints[0], 
+                            triangulos[i].ypoints[0]);
+                    triangulo.addPoint(novoXdeA, novoYdeA);
+                    triangulo.addPoint(novoXdeB, novoYdeB);
+
+                    triangulos[i] = triangulo;
+                }
+            }
+            
+            pintarObjetos();
+            
+            tfComando.setText(
+                    "Selecione um objeto! OBS: Para selecionar é necessário "
+                            + "clicar no ponto inicial do objeto (em vermelho)");
+        } else {
+            tfComando.setText("Ponto inválido! Selecione outro ponto!");
+        }
+    }
+    
     private void rotacionarObjeto(Point point) {
-        if (verificarPontoContemObjeto(point)) {            
+        if (verificarPontoContemObjeto(point)) {
              for (int i=0; i<countRetas; i++) {
                 if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {
-                    Double distanciaX = pSegundo.getX() - retas[i].getX1();
-                    Double distanciaY = pSegundo.getY() - retas[i].getY1();
-                    
-                    Point pointIniAux = new Point(
-                            (int) (retas[i].getX1()+distanciaX),
-                            (int) (retas[i].getY1()+distanciaY));
-                    
-                    Point pointFinAux = new Point(
-                            (int) (retas[i].getX2()+distanciaX), 
-                            (int) (retas[i].getY2()+distanciaY));
-                    
-                    retas[i].setLine(pointIniAux, pointFinAux);
+
                 }
             }
 
