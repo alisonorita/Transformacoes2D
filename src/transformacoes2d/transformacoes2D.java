@@ -541,7 +541,7 @@ public class transformacoes2D extends javax.swing.JFrame {
             for (int i=0; i<countRetas; i++) {
                 if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {
                     Double escala = Double.parseDouble(
-                        JOptionPane.showInputDialog("Digite o fator de escala :"));
+                        JOptionPane.showInputDialog("Digite o fator de escala :","1.00"));
                     
                     Double novoX = 
                             ((retas[i].getX2() - retas[i].getX1()) * escala) +
@@ -559,11 +559,11 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retangulos[i].contains(point) ) {
                     Double escalaX = Double.parseDouble(
                             JOptionPane.showInputDialog("Digite o fator de "
-                                    + "escala em X: "));
+                                    + "escala em X: ","1.00"));
 
                     Double escalaY = Double.parseDouble(
                             JOptionPane.showInputDialog("Digite agora o fator "
-                                    + "de escala em Y: "));
+                                    + "de escala em Y: ","1.00"));
                     
                     
                     Double novoWidth = retangulos[i].getWidth() * escalaX;
@@ -578,7 +578,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (triangulos[i].contains(point) ) {
                     Double escala = Double.parseDouble(
                             JOptionPane.showInputDialog("Digite o fator de "
-                                    + "escala: "));
+                                    + "escala: ","1.00"));
                    
                     int novoXdeA = 
                             (int) ((triangulos[i].xpoints[1] - 
@@ -621,16 +621,17 @@ public class transformacoes2D extends javax.swing.JFrame {
     private void rotacionarObjeto(Point point) {
         if (verificarPontoContemObjeto(point)) {
              for (int i=0; i<countRetas; i++) {
-                if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {                    
-                    AffineTransform at = 
-                            AffineTransform.getRotateInstance(
-                                    Math.toRadians(90), 
-                                    retas[i].getX1(), retas[i].getY1());
+                if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {                    
+                    AffineTransform at = new AffineTransform();
+                    
+                    at.rotate(Math.toRadians(90), 
+                            retas[i].getX1(), retas[i].getY1());
                     
                     Shape s = at.createTransformedShape(retas[i]);
                     
-                    retas[i].setLine(retas[i].getX1(), retas[i].getY1(),
-                            s.getBounds().getX(), s.getBounds().getY());
+                    retas[i].setLine(s.getBounds().getX(), s.getBounds().getY(),
+                            s.getBounds().getX() + s.getBounds().getWidth(), 
+                            s.getBounds().getY() + s.getBounds().getHeight());
                 }
             }
 
@@ -638,7 +639,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retangulos[i].contains(point) ) {
                     AffineTransform at = new AffineTransform();
                     
-                    at.rotate( Math.toRadians(90),
+                    at.rotate(Math.toRadians(90),
                             retangulos[i].getX(), retangulos[i].getY());
                     
                     Shape s = at.createTransformedShape(retangulos[i]);
@@ -654,7 +655,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (triangulos[i].contains(point) ) {
                     AffineTransform at = new AffineTransform();
                     
-                    at.rotate( Math.toRadians(90),
+                    at.rotate(Math.toRadians(90),
                             triangulos[i].getBounds().getX(), 
                             triangulos[i].getBounds().getY());
                     
