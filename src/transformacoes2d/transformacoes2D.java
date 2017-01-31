@@ -6,9 +6,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
 
@@ -619,28 +621,46 @@ public class transformacoes2D extends javax.swing.JFrame {
     private void rotacionarObjeto(Point point) {
         if (verificarPontoContemObjeto(point)) {
              for (int i=0; i<countRetas; i++) {
-                if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {
-
+                if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {                    
+                    AffineTransform at = 
+                            AffineTransform.getRotateInstance(
+                                    Math.toRadians(90), 
+                                    retas[i].getX1(), retas[i].getY1());
+                    
+                    Shape s = at.createTransformedShape(retas[i]);
+                    
+                    retas[i].setLine(retas[i].getX1(), retas[i].getY1(),
+                            s.getBounds().getX(), s.getBounds().getY());
                 }
             }
 
             for (int i=0; i<countRetangulos; i++) {
-                if (retangulos[i].contains(pPrimeiro) ) {
-                    Path2D.Double path = new Path2D.Double();
-                    path.append(retangulos[i], false);
+                if (retangulos[i].contains(point) ) {
                     AffineTransform at = new AffineTransform();
-                    at.rotate(Math.toRadians(90), retangulos[i].getX(), 
-                            retangulos[i].getY());
-                    path.transform(at);
                     
-                    retangulos[i] = (Rectangle) path.createTransformedShape(at);
+                    at.rotate( Math.toRadians(90),
+                            retangulos[i].getX(), retangulos[i].getY());
+                    
+                    Shape s = at.createTransformedShape(retangulos[i]);
+                    
+                    retangulos[i].setBounds((int) s.getBounds().getX(),
+                            (int) s.getBounds().getY(), 
+                            (int) s.getBounds().getWidth(),
+                            (int) s.getBounds().getHeight());
                 }
             }
 
             for (int i=0; i<countTriangulos; i++) {
-                if (triangulos[i].contains(pPrimeiro) ) {
+                if (triangulos[i].contains(point) ) {
+                    AffineTransform at = new AffineTransform();
                     
-                    //triangulos[i].translate(distanciaX, distanciaY);
+                    at.rotate( Math.toRadians(90),
+                            triangulos[i].getBounds().getX(), 
+                            triangulos[i].getBounds().getY());
+                    
+                    Shape s = at.createTransformedShape(triangulos[i]);
+                    
+                    //triangulos[i] = (Polygon) at.createTransformedShape(triangulos[i]);
                 }
             }
             
