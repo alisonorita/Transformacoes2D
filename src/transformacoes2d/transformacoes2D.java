@@ -6,11 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
 
@@ -46,7 +42,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         graphic = (Graphics2D) panelDraw.getGraphics();
         graphic.setBackground(Color.WHITE);
         graphic.setColor(Color.BLACK);
-        graphic.setStroke(new BasicStroke(5));
+        graphic.setStroke(new BasicStroke(10));
         
         retas = new Line2D[100];
         retangulos = new Rectangle[100];
@@ -318,20 +314,20 @@ public class transformacoes2D extends javax.swing.JFrame {
 
     private void btTranslacaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btTranslacaoActionPerformed
         tfComando.setText(
-            "Selecione um objeto! OBS: Para selecionar é necessário clicar no "
-                    + "ponto inicial do objeto (em vermelho)");
+            "Selecione um objeto! OBS: Para selecionar pode clicar em um ponto "
+                    + "que contém o objeto");
     }//GEN-LAST:event_btTranslacaoActionPerformed
 
     private void btMudEscalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMudEscalaActionPerformed
         tfComando.setText(
-            "Selecione um objeto! OBS: Para selecionar é necessário clicar no "
-                    + "ponto inicial do objeto (em vermelho)");
+            "Selecione um objeto! OBS: Para selecionar pode clicar em um ponto "
+                    + "que contém o objeto");
     }//GEN-LAST:event_btMudEscalaActionPerformed
 
     private void btRotacaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRotacaoActionPerformed
         tfComando.setText(
-            "Selecione um objeto! OBS: Para selecionar é necessário clicar no "
-                    + "ponto inicial do objeto (em vermelho)");
+            "Selecione um objeto! OBS: Para selecionar pode clicar em um ponto "
+                    + "que contém o objeto");
     }//GEN-LAST:event_btRotacaoActionPerformed
 
     private void inicializar() {
@@ -521,8 +517,8 @@ public class transformacoes2D extends javax.swing.JFrame {
             pintarObjetos();
             
             tfComando.setText(
-                    "Selecione um objeto! OBS: Para selecionar é necessário "
-                            + "clicar no ponto inicial do objeto (em vermelho)");
+                    "Selecione um objeto! OBS: Para selecionar pode clicar em "
+                            + "um ponto que contém o objeto");
         } else {
             if (verificarPontoContemObjeto(point)) {
                 fazendoTranslacao = Boolean.TRUE;
@@ -611,8 +607,8 @@ public class transformacoes2D extends javax.swing.JFrame {
             pintarObjetos();
             
             tfComando.setText(
-                    "Selecione um objeto! OBS: Para selecionar é necessário "
-                            + "clicar no ponto inicial do objeto (em vermelho)");
+                    "Selecione um objeto! OBS: Para selecionar pode clicar em "
+                            + "um ponto que contém o objeto");
         } else {
             tfComando.setText("Ponto inválido! Selecione outro ponto!");
         }
@@ -622,54 +618,93 @@ public class transformacoes2D extends javax.swing.JFrame {
         if (verificarPontoContemObjeto(point)) {
              for (int i=0; i<countRetas; i++) {
                 if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {                    
-                    AffineTransform at = new AffineTransform();
+                    double[][] matrizObjAux = new double[3][2];  
                     
-                    at.rotate(Math.toRadians(90), 
+                    matrizObjAux[0][0] = retas[i].getX1();
+                    matrizObjAux[0][1] = retas[i].getX2();
+                    matrizObjAux[1][0] = retas[i].getY1();
+                    matrizObjAux[1][1] = retas[i].getY2();
+                    matrizObjAux[2][0] = 1;
+                    matrizObjAux[2][1] = 1;  
+                    
+                    Matrix matrizObj = new Matrix(matrizObjAux);
+                    
+                    Matrix MatrizRes = matrizObj.rotate(matrizObj, 
                             retas[i].getX1(), retas[i].getY1());
                     
-                    Shape s = at.createTransformedShape(retas[i]);
-                    
-                    retas[i].setLine(s.getBounds().getX(), s.getBounds().getY(),
-                            s.getBounds().getX() + s.getBounds().getWidth(), 
-                            s.getBounds().getY() + s.getBounds().getHeight());
+                    retas[i].setLine(MatrizRes.getData(0,0), 
+                            MatrizRes.getData(1,0),
+                            MatrizRes.getData(0,1), 
+                            MatrizRes.getData(1,1));
                 }
             }
 
             for (int i=0; i<countRetangulos; i++) {
-                if (retangulos[i].contains(point) ) {
-                    AffineTransform at = new AffineTransform();
+                if (retangulos[i].contains(point) ) {                    
+                    double[][] matrizObjAux = new double[3][4];  
                     
-                    at.rotate(Math.toRadians(90),
-                            retangulos[i].getX(), retangulos[i].getY());
+                    matrizObjAux[0][0] = retangulos[i].getX();
+                    matrizObjAux[0][1] = retangulos[i].getX();
+                    matrizObjAux[0][2] = retangulos[i].getX()+retangulos[i].getWidth();
+                    matrizObjAux[0][3] = retangulos[i].getX()+retangulos[i].getWidth();
+                    matrizObjAux[1][0] = retangulos[i].getY();
+                    matrizObjAux[1][1] = retangulos[i].getY()+retangulos[i].getHeight();
+                    matrizObjAux[1][2] = retangulos[i].getY();
+                    matrizObjAux[1][3] = retangulos[i].getY()+retangulos[i].getHeight();
+                    matrizObjAux[2][0] = 1;
+                    matrizObjAux[2][1] = 1;
+                    matrizObjAux[2][2] = 1;
+                    matrizObjAux[2][3] = 1;    
                     
-                    Shape s = at.createTransformedShape(retangulos[i]);
+                    Matrix matrizObj = new Matrix(matrizObjAux);
                     
-                    retangulos[i].setBounds((int) s.getBounds().getX(),
-                            (int) s.getBounds().getY(), 
-                            (int) s.getBounds().getWidth(),
-                            (int) s.getBounds().getHeight());
+                    Matrix matrizRes = matrizObj.rotate(
+                            matrizObj, retangulos[i].getX(), retangulos[i].getY());
+                    
+                    retangulos[i].setBounds(
+                            (int) matrizRes.getData(0,0),
+                            (int) matrizRes.getData(1,0), 
+                            (int) (matrizRes.getData(0,2)-matrizRes.getData(0,0)),
+                            (int) (matrizRes.getData(1,1)-matrizRes.getData(1,0)));
                 }
             }
 
             for (int i=0; i<countTriangulos; i++) {
                 if (triangulos[i].contains(point) ) {
-                    AffineTransform at = new AffineTransform();
+                    double[][] matrizObjAux = new double[3][3];
                     
-                    at.rotate(Math.toRadians(90),
-                            triangulos[i].getBounds().getX(), 
-                            triangulos[i].getBounds().getY());
+                    matrizObjAux[0][0] = triangulos[i].xpoints[0];
+                    matrizObjAux[0][1] = triangulos[i].xpoints[1];
+                    matrizObjAux[0][2] = triangulos[i].xpoints[2];
+                    matrizObjAux[1][0] = triangulos[i].ypoints[0];
+                    matrizObjAux[1][1] = triangulos[i].ypoints[1];
+                    matrizObjAux[1][2] = triangulos[i].ypoints[2];
+                    matrizObjAux[2][0] = 1;
+                    matrizObjAux[2][1] = 1;
+                    matrizObjAux[2][2] = 1;
                     
-                    Shape s = at.createTransformedShape(triangulos[i]);
+                    Matrix matrizObj = new Matrix(matrizObjAux);
                     
-                    //triangulos[i] = (Polygon) at.createTransformedShape(triangulos[i]);
+                    Matrix matrizRes = matrizObj.rotate(
+                            matrizObj, triangulos[i].xpoints[0], triangulos[i].ypoints[0]);
+                    
+                    Polygon triangulo = new Polygon();                    
+                    triangulo.addPoint((int) matrizRes.getData(0, 0), 
+                            (int) matrizRes.getData(1, 0));
+                    triangulo.addPoint((int) matrizRes.getData(0, 1), 
+                            (int) matrizRes.getData(1, 1));
+                    triangulo.addPoint((int) matrizRes.getData(0, 2), 
+                            (int) matrizRes.getData(1, 2));
+                    
+                    triangulos[i] = triangulo;
                 }
             }
             
             pintarObjetos();
             
             tfComando.setText(
-                    "Selecione um objeto! OBS: Para selecionar é necessário "
-                            + "clicar no ponto inicial do objeto (em vermelho)");            
+                    "Selecione um objeto! OBS: Para selecionar pode clicar em "
+                            + "um ponto que contém o objeto");
         } else {
             tfComando.setText("Ponto inválido! Selecione outro ponto!");
         }
@@ -679,7 +714,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         Boolean contem = Boolean.FALSE;
         
         for (int i=0; i<countRetas; i++) {
-            if (retas[i].intersects(point.getX(), point.getY(),2,2) )
+            if (retas[i].intersects(point.getX(), point.getY(),5,5) )
                 contem = Boolean.TRUE;
         }
         
