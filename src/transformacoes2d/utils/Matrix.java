@@ -201,4 +201,66 @@ final public class Matrix {
         
         return MatrizRes;
     }
+    
+    public Matrix getMatrixTransformacao(int minViewX, int minViewY, 
+            int maxViewX, int maxViewY, int minWinX, int minWinY,
+            int maxWinX, int maxWinY, Matrix matrizObj) {
+        
+        double escalaX = ((double) (maxViewX-minViewX)/(double) (maxWinX-minWinX));
+        double escalaY = ((double) (maxViewY-minViewY)/(double) (maxWinY-minWinY));
+        
+        double viewR = ((double) (maxViewX-minViewX)/(double) (maxViewY-minViewY));        
+        double winR = ((double)(maxWinX-minWinX)/(double) (maxWinY-minWinY));
+        
+        double[][] matrizOperAux = new double[3][3];
+        
+        matrizOperAux[0][0] = escalaX;
+        matrizOperAux[0][1] = 0;
+        matrizOperAux[0][2] = ((-minWinX*escalaX)+minViewX);
+        matrizOperAux[1][0] = 0;
+        matrizOperAux[1][1] = escalaY;
+        matrizOperAux[1][2] = ((-minWinY*escalaY)+minViewY);
+        matrizOperAux[2][0] = 0;
+        matrizOperAux[2][1] = 0;
+        matrizOperAux[2][2] = 1;
+        
+        Matrix matrizTrans = new Matrix(matrizOperAux);
+        //Matrix matrizResult = matrizTrans.times(matrizObj);
+        Matrix matrizResult = matrizObj;
+        
+        if (winR > viewR) {
+            double novoMaxY = ((maxViewX-minViewX)/winR)+minViewY;
+            
+            matrizOperAux[0][0] = 1;
+            matrizOperAux[0][1] = 0;
+            matrizOperAux[0][2] = 0;
+            matrizOperAux[1][0] = 0;
+            matrizOperAux[1][1] = 1;
+            matrizOperAux[1][2] = ((maxViewY-novoMaxY)/2);
+            matrizOperAux[2][0] = 0;
+            matrizOperAux[2][1] = 0;
+            matrizOperAux[2][2] = 1;
+            
+            Matrix matrizTransCentroY = new Matrix( matrizOperAux);
+            matrizResult = matrizTransCentroY.times(matrizResult);
+            
+        } else {
+            double novoMaxX = (winR*(maxViewY-minViewY))+minViewX;
+            
+            matrizOperAux[0][0] = 1;
+            matrizOperAux[0][1] = 0;
+            matrizOperAux[0][2] = ((maxViewX-novoMaxX)/2);
+            matrizOperAux[1][0] = 0;
+            matrizOperAux[1][1] = 1;
+            matrizOperAux[1][2] = 0;
+            matrizOperAux[2][0] = 0;
+            matrizOperAux[2][1] = 0;
+            matrizOperAux[2][2] = 1;
+            
+            Matrix matrizTransCentroX = new Matrix(matrizOperAux);
+            matrizResult = matrizTransCentroX.times(matrizResult);
+        }
+        
+        return matrizResult;
+    }
 }

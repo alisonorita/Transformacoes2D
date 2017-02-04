@@ -6,10 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.geom.Line2D;
 import java.util.Arrays;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -19,8 +16,6 @@ public class transformacoes2D extends javax.swing.JFrame {
     private Boolean desenhandoRetangulo;
     private int desenhandoTriangulo;
     private Boolean fazendoTranslacao;
-    private Boolean fazendoMudEscala;
-    private Boolean fazendoRotacao;
     
     private final Graphics2D graphic;
     
@@ -28,13 +23,18 @@ public class transformacoes2D extends javax.swing.JFrame {
     private Point pSegundo;
     private Point pTerceiro;
     
-    private final Line2D[] retas;
+    private final Polygon[] retas;
     private final Polygon[] retangulos;
     private final Polygon[] triangulos;
     
     private int countRetas;
     private int countRetangulos;
     private int countTriangulos;
+    
+    private int minX;
+    private int minY;
+    private int maxX;
+    private int maxY;
     
     public transformacoes2D() {
         initComponents();
@@ -54,7 +54,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         graphic.setColor(Color.BLACK);
         graphic.setStroke(new BasicStroke(10));
         
-        retas = new Line2D[100];
+        retas = new Polygon[100];
         retangulos = new Polygon[100];
         triangulos = new Polygon[100];
         
@@ -163,6 +163,11 @@ public class transformacoes2D extends javax.swing.JFrame {
         });
 
         btZoom.setText("Zoom Extend");
+        btZoom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btZoomActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -223,19 +228,17 @@ public class transformacoes2D extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(tfComando)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btFechar)
-                .addGap(18, 18, 18))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(tfComando, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(btFechar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfComando)
+                    .addComponent(btFechar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -256,15 +259,15 @@ public class transformacoes2D extends javax.swing.JFrame {
         );
         panelDrawLayout.setVerticalGroup(
             panelDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 455, Short.MAX_VALUE)
+            .addGap(0, 452, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(panelDraw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
@@ -354,13 +357,15 @@ public class transformacoes2D extends javax.swing.JFrame {
                     + "que contém o objeto");
     }//GEN-LAST:event_btRotacaoActionPerformed
 
+    private void btZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btZoomActionPerformed
+        transformacaoZoomExtend();
+    }//GEN-LAST:event_btZoomActionPerformed
+
     private void inicializar() {
         desenhandoReta = Boolean.FALSE;
         desenhandoRetangulo = Boolean.FALSE;
         desenhandoTriangulo = 0;
         fazendoTranslacao = Boolean.FALSE;
-        fazendoMudEscala = Boolean.FALSE;
-        fazendoRotacao = Boolean.FALSE;
         
         Arrays.fill(retas, null);
         Arrays.fill(retangulos, null);
@@ -369,6 +374,11 @@ public class transformacoes2D extends javax.swing.JFrame {
         countRetas = 0;
         countRetangulos = 0;
         countTriangulos = 0;
+        
+        minX = 1000;
+        minY = 1000;
+        maxX = 0;
+        maxY = 0;
     }
     
     private void adicionarReta(Point point) {
@@ -376,7 +386,10 @@ public class transformacoes2D extends javax.swing.JFrame {
             desenhandoReta = Boolean.FALSE;
             pSegundo = point;
             
-            Line2D reta = new Line2D.Double(pPrimeiro, pSegundo);            
+            Polygon reta = new Polygon();
+            reta.addPoint((int) pPrimeiro.getX(), (int) pPrimeiro.getY());
+            reta.addPoint((int) pSegundo.getX(), (int) pSegundo.getY());
+            
             retas[countRetas] = reta;
             countRetas++;
             
@@ -490,18 +503,10 @@ public class transformacoes2D extends javax.swing.JFrame {
             
             for (int i=0; i<countRetas; i++) {
                 if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),5,5)) {
-                    Double distanciaX = pSegundo.getX() - retas[i].getX1();
-                    Double distanciaY = pSegundo.getY() - retas[i].getY1();
+                    int distanciaX = (int) (pSegundo.getX() - retas[i].xpoints[0]);
+                    int distanciaY = (int) (pSegundo.getY() - retas[i].ypoints[0]);
 
-                    Point pointIniAux = new Point(
-                            (int) (retas[i].getX1()+distanciaX),
-                            (int) (retas[i].getY1()+distanciaY));
-
-                    Point pointFinAux = new Point(
-                            (int) (retas[i].getX2()+distanciaX), 
-                            (int) (retas[i].getY2()+distanciaY));
-
-                    retas[i].setLine(pointIniAux, pointFinAux);
+                    retas[i].translate(distanciaX, distanciaY);
                 }
             }
 
@@ -545,31 +550,53 @@ public class transformacoes2D extends javax.swing.JFrame {
         if (verificarPontoContemObjeto(point)) {  
             for (int i=0; i<countRetas; i++) {
                 if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {
-                    Double escala = Double.parseDouble(
-                        JOptionPane.showInputDialog("Digite o fator de escala :","1.00"));
                     
-                    Double novoX = 
-                            ((retas[i].getX2() - retas[i].getX1()) * escala) +
-                            retas[i].getX1();
-                    Double novoY = 
-                            ((retas[i].getY2() - retas[i].getY1()) * escala) +
-                            retas[i].getY1();
+                    String input = JOptionPane.showInputDialog(null,
+                                    "Digite o fator de escala :","1.00");
+                    
+                    Double escala;
+                    if (input == null) {
+                        escala = 1.00;
+                    } else {
+                        escala = Double.parseDouble(input);
+                    }
+                    
+                    int novoX = 
+                            (int) ((retas[i].xpoints[1] - retas[i].xpoints[0]) * 
+                            escala) + retas[i].xpoints[0];
+                    int novoY = 
+                            (int) ((retas[i].ypoints[1] - retas[i].ypoints[0]) * 
+                            escala) + retas[i].ypoints[0];
+                    
+                    Polygon reta = new Polygon();
+                    reta.addPoint(retas[i].xpoints[0], retas[i].ypoints[0]);
+                    reta.addPoint(novoX, novoY);
 
-                    retas[i].setLine(retas[i].getX1(), retas[i].getY1(),
-                            novoX, novoY);
+                    retas[i] = reta;
                 }
             }
 
             for (int i=0; i<countRetangulos; i++) {
                 if (retangulos[i].contains(point) ) {
-                    Double escalaX = Double.parseDouble(
-                            JOptionPane.showInputDialog("Digite o fator de "
-                                    + "escala em X: ","1.00"));
-
-                    Double escalaY = Double.parseDouble(
-                            JOptionPane.showInputDialog("Digite agora o fator "
-                                    + "de escala em Y: ","1.00"));
+                    String inputX = JOptionPane.showInputDialog(null,
+                            "Digite o fator de escala em X: ","1.00");
                     
+                    Double escalaX;
+                    if (inputX == null) {
+                        escalaX = 1.00;
+                    } else {
+                        escalaX = Double.parseDouble(inputX);
+                    }
+
+                    String inputY = JOptionPane.showInputDialog(null,
+                            "Digite agora o fator de escala em Y: ","1.00");
+                    
+                    Double escalaY;
+                    if (inputY == null) {
+                        escalaY = 1.00;
+                    } else {
+                        escalaY = Double.parseDouble(inputY);
+                    }
                     
                     int novoWidth = 
                             (int) ((retangulos[i].xpoints[2] - 
@@ -596,9 +623,15 @@ public class transformacoes2D extends javax.swing.JFrame {
 
             for (int i=0; i<countTriangulos; i++) {
                 if (triangulos[i].contains(point) ) {
-                    Double escala = Double.parseDouble(
-                            JOptionPane.showInputDialog("Digite o fator de "
-                                    + "escala: ","1.00"));
+                    String input = JOptionPane.showInputDialog(null,
+                            "Digite o fator de escala: ","1.00");
+                    
+                    Double escala;
+                    if (input == null) {
+                        escala = 1.00;
+                    } else {
+                        escala = Double.parseDouble(input);
+                    }
                    
                     int novoXdeA = 
                             (int) ((triangulos[i].xpoints[1] - 
@@ -644,22 +677,25 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retas[i].intersects(point.getX(), point.getY(),2,2) ) {                    
                     double[][] matrizObjAux = new double[3][2];  
                     
-                    matrizObjAux[0][0] = retas[i].getX1();
-                    matrizObjAux[0][1] = retas[i].getX2();
-                    matrizObjAux[1][0] = retas[i].getY1();
-                    matrizObjAux[1][1] = retas[i].getY2();
+                    matrizObjAux[0][0] = retas[i].xpoints[0];
+                    matrizObjAux[0][1] = retas[i].xpoints[1];
+                    matrizObjAux[1][0] = retas[i].ypoints[0];
+                    matrizObjAux[1][1] = retas[i].ypoints[1];
                     matrizObjAux[2][0] = 1;
                     matrizObjAux[2][1] = 1;  
                     
                     Matrix matrizObj = new Matrix(matrizObjAux);
                     
-                    Matrix MatrizRes = matrizObj.rotate(matrizObj, 
-                            retas[i].getX1(), retas[i].getY1());
+                    Matrix matrizRes = matrizObj.rotate(matrizObj, 
+                            retas[i].xpoints[0], retas[i].ypoints[0]);
                     
-                    retas[i].setLine(MatrizRes.getData(0,0), 
-                            MatrizRes.getData(1,0),
-                            MatrizRes.getData(0,1), 
-                            MatrizRes.getData(1,1));
+                    Polygon reta = new Polygon();
+                    reta.addPoint((int) matrizRes.getData(0, 0),
+                            (int) matrizRes.getData(1, 0));
+                    reta.addPoint((int) matrizRes.getData(0, 1),
+                            (int) matrizRes.getData(1, 1));
+                    
+                    retas[i] = reta;
                 }
             }
 
@@ -686,7 +722,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                             matrizObj, retangulos[i].xpoints[0], 
                             retangulos[i].ypoints[0]);
                     
-                    Polygon retangulo = new Polygon();                    
+                    Polygon retangulo = new Polygon();
                     retangulo.addPoint((int) matrizRes.getData(0, 0), 
                             (int) matrizRes.getData(1, 0));
                     retangulo.addPoint((int) matrizRes.getData(0, 1), 
@@ -741,6 +777,110 @@ public class transformacoes2D extends javax.swing.JFrame {
         }
     }
     
+    private void transformacaoZoomExtend() {
+        int minViewX = 50;
+        int minViewY = 50;
+        int maxViewX = panelDraw.getWidth()-50;
+        int maxViewY = panelDraw.getHeight()-50;
+        
+        int minWinX = 0;
+        int minWinY = 0;
+        int maxWinX = panelDraw.getWidth();
+        int maxWinY = panelDraw.getHeight();
+            
+        for (int i=0; i<countRetas; i++) {
+            double[][] matrizObjAux = new double[3][2];
+
+            matrizObjAux[0][0] = retas[i].xpoints[0];
+            matrizObjAux[0][1] = retas[i].xpoints[1];
+            matrizObjAux[1][0] = retas[i].ypoints[0];
+            matrizObjAux[1][1] = retas[i].ypoints[1];
+            matrizObjAux[2][0] = 1;
+            matrizObjAux[2][1] = 1;  
+
+            Matrix matrizObj = new Matrix(matrizObjAux);
+
+            Matrix matrizRes = new Matrix(3,3).getMatrixTransformacao(
+                minViewX, minViewY, maxViewX, maxViewY, 
+                minWinX, minWinY, maxWinX, maxWinY, matrizObj);
+
+            Polygon reta = new Polygon();
+            reta.addPoint((int) matrizRes.getData(0, 0),
+                    (int) matrizRes.getData(1, 0));
+            reta.addPoint((int) matrizRes.getData(0, 1),
+                    (int) matrizRes.getData(1, 1));
+
+            retas[i] = reta;
+        }  
+        
+        for (int i=0; i<countRetangulos; i++) {
+            double[][] matrizObjAux = new double[3][4];  
+
+            matrizObjAux[0][0] = retangulos[i].xpoints[0];
+            matrizObjAux[0][1] = retangulos[i].xpoints[1];
+            matrizObjAux[0][2] = retangulos[i].xpoints[2];
+            matrizObjAux[0][3] = retangulos[i].xpoints[3];
+            matrizObjAux[1][0] = retangulos[i].ypoints[0];
+            matrizObjAux[1][1] = retangulos[i].ypoints[1];
+            matrizObjAux[1][2] = retangulos[i].ypoints[2];
+            matrizObjAux[1][3] = retangulos[i].ypoints[3];
+            matrizObjAux[2][0] = 1;
+            matrizObjAux[2][1] = 1;
+            matrizObjAux[2][2] = 1;
+            matrizObjAux[2][3] = 1;    
+
+            Matrix matrizObj = new Matrix(matrizObjAux);
+
+            Matrix matrizRes = new Matrix(3,3).getMatrixTransformacao(
+                minViewX, minViewY, maxViewX, maxViewY, 
+                minWinX, minWinY, maxWinX, maxWinY, matrizObj);
+
+            Polygon retangulo = new Polygon();
+            retangulo.addPoint((int) matrizRes.getData(0, 0), 
+                    (int) matrizRes.getData(1, 0));
+            retangulo.addPoint((int) matrizRes.getData(0, 1), 
+                    (int) matrizRes.getData(1, 1));
+            retangulo.addPoint((int) matrizRes.getData(0, 2), 
+                    (int) matrizRes.getData(1, 2));
+            retangulo.addPoint((int) matrizRes.getData(0, 3), 
+                    (int) matrizRes.getData(1, 3));
+
+            retangulos[i] = retangulo;
+        }
+        
+        for (int i=0; i<countTriangulos; i++) {            
+            double[][] matrizObjAux = new double[3][3];
+
+            matrizObjAux[0][0] = triangulos[i].xpoints[0];
+            matrizObjAux[0][1] = triangulos[i].xpoints[1];
+            matrizObjAux[0][2] = triangulos[i].xpoints[2];
+            matrizObjAux[1][0] = triangulos[i].ypoints[0];
+            matrizObjAux[1][1] = triangulos[i].ypoints[1];
+            matrizObjAux[1][2] = triangulos[i].ypoints[2];
+            matrizObjAux[2][0] = 1;
+            matrizObjAux[2][1] = 1;
+            matrizObjAux[2][2] = 1;
+
+            Matrix matrizObj = new Matrix(matrizObjAux);
+
+            Matrix matrizRes = new Matrix(3,3).getMatrixTransformacao(
+                minViewX, minViewY, maxViewX, maxViewY, 
+                minWinX, minWinY, maxWinX, maxWinY, matrizObj);
+
+            Polygon triangulo = new Polygon();                    
+            triangulo.addPoint((int) matrizRes.getData(0, 0), 
+                    (int) matrizRes.getData(1, 0));
+            triangulo.addPoint((int) matrizRes.getData(0, 1), 
+                    (int) matrizRes.getData(1, 1));
+            triangulo.addPoint((int) matrizRes.getData(0, 2), 
+                    (int) matrizRes.getData(1, 2));
+
+            triangulos[i] = triangulo;
+        }
+        
+        pintarObjetos();
+    }
+    
     private Boolean verificarPontoContemObjeto(Point point) {
         Boolean contem = Boolean.FALSE;
         
@@ -768,12 +908,23 @@ public class transformacoes2D extends javax.swing.JFrame {
         
         for (int i=0; i<countRetas; i++) {
             graphic.setColor(Color.BLACK);
-            graphic.drawLine((int) retas[i].getX1(), (int) retas[i].getY1(),
-                    (int) retas[i].getX2(), (int) retas[i].getY2());
+            graphic.draw(retas[i]);
 
             graphic.setColor(Color.RED);
-            graphic.drawLine((int) retas[i].getX1(), (int) retas[i].getY1(),
-                    (int) retas[i].getX1(), (int) retas[i].getY1());
+            graphic.drawLine(retas[i].xpoints[0], retas[i].ypoints[0],
+                    retas[i].xpoints[0], retas[i].ypoints[0]);
+            
+            if (minX > retas[i].getBounds().getMinX())
+                minX = (int) retas[i].getBounds().getMinX();
+            
+            if (minY > retas[i].getBounds().getMinY())
+                minY = (int) retas[i].getBounds().getMinY();
+            
+            if (maxX < retas[i].getBounds().getMaxX())
+                maxX = (int) retas[i].getBounds().getMaxX();
+            
+            if (maxY < retas[i].getBounds().getMaxY())
+                maxY = (int) retas[i].getBounds().getMaxY();
         }
         
         for (int i=0; i<countRetangulos; i++) {
@@ -783,6 +934,18 @@ public class transformacoes2D extends javax.swing.JFrame {
             graphic.setColor(Color.RED);
             graphic.drawLine(retangulos[i].xpoints[0], retangulos[i].ypoints[0], 
                     retangulos[i].xpoints[0], retangulos[i].ypoints[0]);
+            
+            if (minX > retangulos[i].getBounds().getMinX())
+                minX = (int) retangulos[i].getBounds().getMinX();
+            
+            if (minY > retangulos[i].getBounds().getMinY())
+                minY = (int) retangulos[i].getBounds().getMinY();
+            
+            if (maxX < retangulos[i].getBounds().getMaxX())
+                maxX = (int) retangulos[i].getBounds().getMaxX();
+            
+            if (maxY < retangulos[i].getBounds().getMaxY())
+                maxY = (int) retangulos[i].getBounds().getMaxY();
         }
         
         for (int i=0; i<countTriangulos; i++) {            
@@ -794,6 +957,18 @@ public class transformacoes2D extends javax.swing.JFrame {
                     triangulos[i].ypoints[0],
                     triangulos[i].xpoints[0], 
                     triangulos[i].ypoints[0]);
+            
+            if (minX > triangulos[i].getBounds().getMinX())
+                minX = (int) triangulos[i].getBounds().getMinX();
+            
+            if (minY > triangulos[i].getBounds().getMinY())
+                minY = (int) triangulos[i].getBounds().getMinY();
+            
+            if (maxX < triangulos[i].getBounds().getMaxX())
+                maxX = (int) triangulos[i].getBounds().getMaxX();
+            
+            if (maxY < triangulos[i].getBounds().getMaxY())
+                maxY = (int) triangulos[i].getBounds().getMaxY();
         }
     }
     
@@ -825,15 +1000,12 @@ public class transformacoes2D extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(transformacoes2D.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(transformacoes2D.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(transformacoes2D.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(transformacoes2D.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        
         //</editor-fold>
         //</editor-fold>
 
