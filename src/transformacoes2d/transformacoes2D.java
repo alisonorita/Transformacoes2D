@@ -1,5 +1,6 @@
 package transformacoes2d;
 
+import transformacoes2d.utils.Matrix;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -8,6 +9,8 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.Arrays;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 public class transformacoes2D extends javax.swing.JFrame {
@@ -26,7 +29,7 @@ public class transformacoes2D extends javax.swing.JFrame {
     private Point pTerceiro;
     
     private final Line2D[] retas;
-    private final Rectangle[] retangulos;
+    private final Polygon[] retangulos;
     private final Polygon[] triangulos;
     
     private int countRetas;
@@ -35,6 +38,13 @@ public class transformacoes2D extends javax.swing.JFrame {
     
     public transformacoes2D() {
         initComponents();
+ 
+        btClear.setIcon(new ImageIcon(getClass().getResource("imagens\\clear.png")));
+        btTranslacao.setIcon(new ImageIcon(getClass().getResource("imagens\\move.png")));
+        btMudEscala.setIcon(new ImageIcon(getClass().getResource("imagens\\scale.png")));
+        btRotacao.setIcon(new ImageIcon(getClass().getResource("imagens\\rotate.png")));
+        btZoom.setIcon(new ImageIcon(getClass().getResource("imagens\\zoom.png")));        
+        btFechar.setIcon(new ImageIcon(getClass().getResource("imagens\\close.png")));
         
         this.setLocationRelativeTo(null);
         panelDraw.setBackground(Color.WHITE);
@@ -45,7 +55,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         graphic.setStroke(new BasicStroke(10));
         
         retas = new Line2D[100];
-        retangulos = new Rectangle[100];
+        retangulos = new Polygon[100];
         triangulos = new Polygon[100];
         
         inicializar();
@@ -66,6 +76,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         btTranslacao = new javax.swing.JToggleButton();
         btMudEscala = new javax.swing.JToggleButton();
         btRotacao = new javax.swing.JToggleButton();
+        btZoom = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         btFechar = new javax.swing.JButton();
         tfComando = new javax.swing.JTextField();
@@ -79,6 +90,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         btClear.setText("Clear");
+        btClear.setToolTipText("");
         btClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btClearActionPerformed(evt);
@@ -120,6 +132,8 @@ public class transformacoes2D extends javax.swing.JFrame {
 
         buttonGroup1.add(btTranslacao);
         btTranslacao.setText("Translação");
+        btTranslacao.setMaximumSize(new java.awt.Dimension(90, 23));
+        btTranslacao.setMinimumSize(new java.awt.Dimension(90, 23));
         btTranslacao.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btTranslacaoActionPerformed(evt);
@@ -128,6 +142,8 @@ public class transformacoes2D extends javax.swing.JFrame {
 
         buttonGroup1.add(btMudEscala);
         btMudEscala.setText("M. Escala");
+        btMudEscala.setMaximumSize(new java.awt.Dimension(90, 23));
+        btMudEscala.setMinimumSize(new java.awt.Dimension(90, 23));
         btMudEscala.setPreferredSize(new java.awt.Dimension(85, 23));
         btMudEscala.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -137,12 +153,16 @@ public class transformacoes2D extends javax.swing.JFrame {
 
         buttonGroup1.add(btRotacao);
         btRotacao.setText("Rotação");
+        btRotacao.setMaximumSize(new java.awt.Dimension(90, 23));
+        btRotacao.setMinimumSize(new java.awt.Dimension(90, 23));
         btRotacao.setPreferredSize(new java.awt.Dimension(85, 23));
         btRotacao.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btRotacaoActionPerformed(evt);
             }
         });
+
+        btZoom.setText("Zoom Extend");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -159,12 +179,14 @@ public class transformacoes2D extends javax.swing.JFrame {
                 .addComponent(rbRetangulo)
                 .addGap(18, 18, 18)
                 .addComponent(rbTriangulo)
-                .addGap(32, 32, 32)
-                .addComponent(btTranslacao)
                 .addGap(18, 18, 18)
-                .addComponent(btMudEscala, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btTranslacao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btRotacao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btMudEscala, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btRotacao, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btZoom)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -172,18 +194,16 @@ public class transformacoes2D extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btZoom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btRotacao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(btClear)
-                                .addComponent(rbReta)
-                                .addComponent(rbRetangulo)
-                                .addComponent(rbTriangulo)
-                                .addComponent(rbCursor)
-                                .addComponent(btTranslacao))
-                            .addComponent(btMudEscala, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(btMudEscala, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btClear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(rbReta, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(rbRetangulo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(rbTriangulo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(rbCursor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btTranslacao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -203,18 +223,20 @@ public class transformacoes2D extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(tfComando)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btFechar)
-                .addContainerGap())
+                .addGap(18, 18, 18))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btFechar)
-                    .addComponent(tfComando, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(tfComando, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btFechar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         panelDraw.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -230,7 +252,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         panelDraw.setLayout(panelDrawLayout);
         panelDrawLayout.setHorizontalGroup(
             panelDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 995, Short.MAX_VALUE)
         );
         panelDrawLayout.setVerticalGroup(
             panelDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -242,8 +264,10 @@ public class transformacoes2D extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelDraw, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(panelDraw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -378,26 +402,11 @@ public class transformacoes2D extends javax.swing.JFrame {
             desenhandoRetangulo = Boolean.FALSE;
             pSegundo = point;
             
-            int iniX, iniY, finX, finY;
-            
-            if (pPrimeiro.getX() > pSegundo.getX()) {
-                iniX = (int) pSegundo.getX();
-                finX = (int) pPrimeiro.getX();
-            } else {
-                iniX = (int) pPrimeiro.getX();
-                finX = (int) pSegundo.getX();
-            }
-            
-            if (pPrimeiro.getY() > pSegundo.getY()) {
-                iniY = (int) pSegundo.getY();
-                finY = (int) pPrimeiro.getY();
-            } else {
-                iniY = (int) pPrimeiro.getY();
-                finY = (int) pSegundo.getY();
-            }
-            
-            Rectangle retangulo = new Rectangle(iniX, iniY, (finX - iniX),
-                    (finY - iniY));
+            Polygon retangulo = new Polygon();
+            retangulo.addPoint((int) pPrimeiro.getX(), (int) pPrimeiro.getY());
+            retangulo.addPoint((int) pSegundo.getX(), (int) pPrimeiro.getY());
+            retangulo.addPoint((int) pSegundo.getX(), (int) pSegundo.getY());
+            retangulo.addPoint((int) pPrimeiro.getX(), (int) pSegundo.getY());
             
             retangulos[countRetangulos] = retangulo;
             countRetangulos++;
@@ -480,7 +489,7 @@ public class transformacoes2D extends javax.swing.JFrame {
             pSegundo = point;
             
             for (int i=0; i<countRetas; i++) {
-                if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),2,2) ) {
+                if (retas[i].intersects(pPrimeiro.getX(), pPrimeiro.getY(),5,5)) {
                     Double distanciaX = pSegundo.getX() - retas[i].getX1();
                     Double distanciaY = pSegundo.getY() - retas[i].getY1();
 
@@ -498,8 +507,8 @@ public class transformacoes2D extends javax.swing.JFrame {
 
             for (int i=0; i<countRetangulos; i++) {
                 if (retangulos[i].contains(pPrimeiro) ) {
-                    int distanciaX = (int) (pSegundo.getX() - retangulos[i].getX());
-                    int distanciaY = (int) (pSegundo.getY() - retangulos[i].getY());
+                    int distanciaX = (int) (pSegundo.getX() - retangulos[i].xpoints[0]);
+                    int distanciaY = (int) (pSegundo.getY() - retangulos[i].ypoints[0]);
 
                     retangulos[i].translate(distanciaX, distanciaY);
                 }
@@ -562,11 +571,26 @@ public class transformacoes2D extends javax.swing.JFrame {
                                     + "de escala em Y: ","1.00"));
                     
                     
-                    Double novoWidth = retangulos[i].getWidth() * escalaX;
-                    Double novoHeight = retangulos[i].getHeight() * escalaY;
+                    int novoWidth = 
+                            (int) ((retangulos[i].xpoints[2] - 
+                            retangulos[i].xpoints[0]) * escalaX);
+                    
+                    int novoHeight = 
+                            (int) ((retangulos[i].ypoints[2] - 
+                             retangulos[i].ypoints[0]) * escalaY);
+                    
+                    Polygon retangulo = new Polygon();
+                    retangulo.addPoint(
+                            retangulos[i].xpoints[0], retangulos[i].ypoints[0]);
+                    retangulo.addPoint(
+                            (retangulos[i].xpoints[0] + novoWidth), retangulos[i].ypoints[0]);
+                    retangulo.addPoint(
+                            (retangulos[i].xpoints[0] + novoWidth), 
+                            (retangulos[i].ypoints[0] + novoHeight));
+                    retangulo.addPoint(
+                            retangulos[i].xpoints[0], (retangulos[i].ypoints[0] + novoHeight));
 
-                    retangulos[i].setRect(retangulos[i].getX(),
-                            retangulos[i].getY(), novoWidth, novoHeight);
+                    retangulos[i] = retangulo;
                 }
             }
 
@@ -643,14 +667,14 @@ public class transformacoes2D extends javax.swing.JFrame {
                 if (retangulos[i].contains(point) ) {                    
                     double[][] matrizObjAux = new double[3][4];  
                     
-                    matrizObjAux[0][0] = retangulos[i].getX();
-                    matrizObjAux[0][1] = retangulos[i].getX();
-                    matrizObjAux[0][2] = retangulos[i].getX()+retangulos[i].getWidth();
-                    matrizObjAux[0][3] = retangulos[i].getX()+retangulos[i].getWidth();
-                    matrizObjAux[1][0] = retangulos[i].getY();
-                    matrizObjAux[1][1] = retangulos[i].getY()+retangulos[i].getHeight();
-                    matrizObjAux[1][2] = retangulos[i].getY();
-                    matrizObjAux[1][3] = retangulos[i].getY()+retangulos[i].getHeight();
+                    matrizObjAux[0][0] = retangulos[i].xpoints[0];
+                    matrizObjAux[0][1] = retangulos[i].xpoints[1];
+                    matrizObjAux[0][2] = retangulos[i].xpoints[2];
+                    matrizObjAux[0][3] = retangulos[i].xpoints[3];
+                    matrizObjAux[1][0] = retangulos[i].ypoints[0];
+                    matrizObjAux[1][1] = retangulos[i].ypoints[1];
+                    matrizObjAux[1][2] = retangulos[i].ypoints[2];
+                    matrizObjAux[1][3] = retangulos[i].ypoints[3];
                     matrizObjAux[2][0] = 1;
                     matrizObjAux[2][1] = 1;
                     matrizObjAux[2][2] = 1;
@@ -659,13 +683,20 @@ public class transformacoes2D extends javax.swing.JFrame {
                     Matrix matrizObj = new Matrix(matrizObjAux);
                     
                     Matrix matrizRes = matrizObj.rotate(
-                            matrizObj, retangulos[i].getX(), retangulos[i].getY());
+                            matrizObj, retangulos[i].xpoints[0], 
+                            retangulos[i].ypoints[0]);
                     
-                    retangulos[i].setBounds(
-                            (int) matrizRes.getData(0,0),
-                            (int) matrizRes.getData(1,0), 
-                            (int) (matrizRes.getData(0,2)-matrizRes.getData(0,0)),
-                            (int) (matrizRes.getData(1,1)-matrizRes.getData(1,0)));
+                    Polygon retangulo = new Polygon();                    
+                    retangulo.addPoint((int) matrizRes.getData(0, 0), 
+                            (int) matrizRes.getData(1, 0));
+                    retangulo.addPoint((int) matrizRes.getData(0, 1), 
+                            (int) matrizRes.getData(1, 1));
+                    retangulo.addPoint((int) matrizRes.getData(0, 2), 
+                            (int) matrizRes.getData(1, 2));
+                    retangulo.addPoint((int) matrizRes.getData(0, 3), 
+                            (int) matrizRes.getData(1, 3));
+                    
+                    retangulos[i] = retangulo;
                 }
             }
 
@@ -714,7 +745,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         Boolean contem = Boolean.FALSE;
         
         for (int i=0; i<countRetas; i++) {
-            if (retas[i].intersects(point.getX(), point.getY(),5,5) )
+            if (retas[i].intersects(point.getX(), point.getY(),5,5))
                 contem = Boolean.TRUE;
         }
         
@@ -747,12 +778,11 @@ public class transformacoes2D extends javax.swing.JFrame {
         
         for (int i=0; i<countRetangulos; i++) {
             graphic.setColor(Color.BLACK);
-            graphic.draw((Rectangle) retangulos[i]);
+            graphic.draw(retangulos[i]);
             
             graphic.setColor(Color.RED);
-            graphic.drawLine((int) retangulos[i].getX(), 
-                    (int) retangulos[i].getY(), (int) retangulos[i].getX(),
-                    (int) retangulos[i].getY());
+            graphic.drawLine(retangulos[i].xpoints[0], retangulos[i].ypoints[0], 
+                    retangulos[i].xpoints[0], retangulos[i].ypoints[0]);
         }
         
         for (int i=0; i<countTriangulos; i++) {            
@@ -760,7 +790,7 @@ public class transformacoes2D extends javax.swing.JFrame {
                 graphic.drawPolygon(triangulos[i]);
                 
             graphic.setColor(Color.RED);
-            graphic.drawLine((int) triangulos[i].xpoints[0], 
+            graphic.drawLine(triangulos[i].xpoints[0], 
                     triangulos[i].ypoints[0],
                     triangulos[i].xpoints[0], 
                     triangulos[i].ypoints[0]);
@@ -819,6 +849,7 @@ public class transformacoes2D extends javax.swing.JFrame {
     private javax.swing.JToggleButton btMudEscala;
     private javax.swing.JToggleButton btRotacao;
     private javax.swing.JToggleButton btTranslacao;
+    private javax.swing.JButton btZoom;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JPanel jPanel1;

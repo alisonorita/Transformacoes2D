@@ -1,4 +1,4 @@
-package transformacoes2d;
+package transformacoes2d.utils;
 
 final public class Matrix {
     private final int M;             // number of rows
