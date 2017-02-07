@@ -39,12 +39,12 @@ public class transformacoes2D extends javax.swing.JFrame {
     public transformacoes2D() {
         initComponents();
  
-        btClear.setIcon(new ImageIcon(getClass().getResource("imagens\\clear.png")));
-        btTranslacao.setIcon(new ImageIcon(getClass().getResource("imagens\\move.png")));
-        btMudEscala.setIcon(new ImageIcon(getClass().getResource("imagens\\scale.png")));
-        btRotacao.setIcon(new ImageIcon(getClass().getResource("imagens\\rotate.png")));
-        btZoom.setIcon(new ImageIcon(getClass().getResource("imagens\\zoom.png")));        
-        btFechar.setIcon(new ImageIcon(getClass().getResource("imagens\\close.png")));
+        btClear.setIcon(new ImageIcon(getClass().getResource("imagens/clear.png")));
+        btTranslacao.setIcon(new ImageIcon(getClass().getResource("imagens/move.png")));
+        btMudEscala.setIcon(new ImageIcon(getClass().getResource("imagens/scale.png")));
+        btRotacao.setIcon(new ImageIcon(getClass().getResource("imagens/rotate.png")));
+        btZoom.setIcon(new ImageIcon(getClass().getResource("imagens/zoom.png")));        
+        btFechar.setIcon(new ImageIcon(getClass().getResource("imagens/close.png")));
         
         this.setLocationRelativeTo(null);
         panelDraw.setBackground(Color.WHITE);
@@ -979,6 +979,7 @@ public class transformacoes2D extends javax.swing.JFrame {
         btTranslacao.setEnabled(flag);
         btMudEscala.setEnabled(flag);
         btRotacao.setEnabled(flag);
+        btZoom.setEnabled(flag);
         
         if (!flag) {
             btTranslacao.setSelected(Boolean.FALSE);

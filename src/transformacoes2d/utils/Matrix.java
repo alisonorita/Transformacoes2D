@@ -225,8 +225,7 @@ final public class Matrix {
         matrizOperAux[2][2] = 1;
         
         Matrix matrizTrans = new Matrix(matrizOperAux);
-        //Matrix matrizResult = matrizTrans.times(matrizObj);
-        Matrix matrizResult = matrizObj;
+        Matrix matrizResult = matrizTrans.times(matrizObj);
         
         if (winR > viewR) {
             double novoMaxY = ((maxViewX-minViewX)/winR)+minViewY;
